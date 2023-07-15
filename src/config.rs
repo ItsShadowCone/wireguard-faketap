@@ -9,6 +9,8 @@ pub struct Peer {
 
 #[derive(Debug)]
 pub struct Config {
+    pub interface_name: String,
+    pub additional_setup: Option<String>,
     pub private_key: String,
     pub listen_addr: String,
     pub persistent_keepalive: Option<u16>,
@@ -18,6 +20,8 @@ pub struct Config {
 impl Config {
     pub fn from_env() -> Config {
         Config {
+            interface_name: env::var("IFNAME").unwrap_or("vpn%d".to_string()),
+            additional_setup: env::var("ADDITIONAL_SETUP").ok(),
             private_key: env::var("PRIVATE_KEY").expect("Error: PRIVATE_KEY not given"),
             listen_addr: env::var("LISTEN_ADDR").unwrap_or("0.0.0.0:51820".to_string()),
             persistent_keepalive: env::var("PERSISTENT_KEEPALIVE").ok()
