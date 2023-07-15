@@ -2,7 +2,7 @@ mod config;
 mod tap;
 
 use tap::{Mode, Iface};
-use std::{net::SocketAddr, sync::Arc, thread};
+use std::{env, net::SocketAddr, sync::Arc, thread};
 use std::error::Error;
 use std::net::UdpSocket;
 use std::ops::DerefMut;
@@ -59,8 +59,16 @@ fn main() {
 
     println!("Using config: {:?}", config);
 
-    let tap = Arc::from(Iface::without_packet_info("vpn%d", Mode::Tap).unwrap());
+    let tap = Arc::from(Iface::without_packet_info(&config.interface_name, Mode::Tap).unwrap());
     cmd("ip", &["link", "set", "up", "dev", tap.name()]);
+    if let Some(setup) = config.additional_setup {
+        let mut it = setup.split_whitespace();
+        let command = it.next().expect("Error: couldn't parse additional setup");
+        let rest = it.collect::<Vec<&str>>();
+        cmd(command, &rest);
+    }
+
+    println!(" ... interface: {}", tap.name());
 
     let socket = Arc::from(UdpSocket::bind(config.listen_addr).expect("Socket: bind failed"));
     let tunnel = Arc::new(Mutex::new(Tunnel::new(config.peer.endpoint, Tunn::new(string_to_key(config.private_key).unwrap(),
