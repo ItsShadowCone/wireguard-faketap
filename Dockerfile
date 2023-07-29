@@ -1,4 +1,4 @@
-FROM rust:latest
+FROM rust:bookworm
 WORKDIR /usr/src/myapp
 
 ARG PRIVATE_KEY
