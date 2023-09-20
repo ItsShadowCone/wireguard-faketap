@@ -8,7 +8,4 @@ edition = "2021"
 [dependencies]
 base64 = "0.21.2"
 boringtun = "0.6.0"
-
-[build-dependencies]
-cc = "~1"
-cargo-emit = "0.2.1"
+nix = { version = "0.27", features = ["ioctl"] }
