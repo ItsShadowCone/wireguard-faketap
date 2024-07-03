@@ -2,10 +2,9 @@ mod config;
 mod tap;
 
 use tap::{Mode, Iface};
-use std::{env, net::SocketAddr, sync::Arc, thread};
+use std::{net::SocketAddr, sync::Arc, thread};
 use std::error::Error;
 use std::net::UdpSocket;
-use std::ops::DerefMut;
 use std::process::Command;
 use std::sync::{Mutex};
 use std::thread::sleep;

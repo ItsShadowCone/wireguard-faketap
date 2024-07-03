@@ -1,9 +1,3 @@
-#![doc(
-html_root_url = "https://docs.rs/tun-tap/0.1.2/tun-tap/",
-test(attr(deny(warnings), allow(unused_variables)))
-)]
-#![deny(missing_docs)]
-
 //! A TUN/TAP bindings for Rust.
 //!
 //! This is a basic interface to create userspace virtual network adapter.
