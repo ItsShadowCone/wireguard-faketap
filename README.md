@@ -11,10 +11,6 @@ MAC addresses are currently simply set to 00:00:00:00:00:00.
 
 **DO NOT DIRECTLY CONNECT THE REGULAR ROUTING STACK TO THE TAP DEVICE i.e. DO NOT add an address to this interface.**
 
-## Disclaimer
-
-This is *currently* a private repo just for safety's sake, but I'll publish it after ICC.
-
 ## Setup
 
 You need effective `CAP_NET_ADMIN` for this to run.
