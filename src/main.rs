@@ -2,7 +2,7 @@ mod config;
 mod tap;
 
 use tap::{Mode, Iface};
-use std::{net::SocketAddr, sync::Arc, thread};
+use std::{net::SocketAddr, net::ToSocketAddrs, sync::Arc, thread};
 use std::error::Error;
 use std::net::UdpSocket;
 use std::process::Command;
@@ -40,18 +40,19 @@ fn cmd(cmd: &str, args: &[&str]) {
 
 struct Tunnel {
     pub endpoint: Option<SocketAddr>,
+    pub endpoint_string: Option<String>,
     pub tun: Tunn,
 }
 
 impl Tunnel {
-    fn new(endpoint: Option<SocketAddr>, tun: Tunn) -> Self {
+    fn new(endpoint: Option<SocketAddr>, endpoint_string: Option<String>, tun: Tunn) -> Self {
         Self {
             endpoint,
+            endpoint_string,
             tun,
         }
     }
 }
-
 
 fn main() {
     let config = Config::from_env();
@@ -70,9 +71,9 @@ fn main() {
     println!(" ... interface: {}", tap.name());
 
     let socket = Arc::from(UdpSocket::bind(config.listen_addr).expect("Socket: bind failed"));
-    let tunnel = Arc::new(Mutex::new(Tunnel::new(config.peer.endpoint, Tunn::new(string_to_key(config.private_key).unwrap(),
-                                                                                 string_to_key(config.peer.public_key).unwrap(),
-                                                                                 None, config.persistent_keepalive, 0, None).expect("Tunnel creation failed"))));
+    let tunnel = Arc::new(Mutex::new(Tunnel::new(None, config.peer.endpoint, Tunn::new(string_to_key(config.private_key).unwrap(),
+                                                                                       string_to_key(config.peer.public_key).unwrap(),
+                                                                                       None, config.persistent_keepalive, 0, None).expect("Tunnel creation failed"))));
 
     let keepalive_socket = socket.clone();
     let keepalive_tunnel = tunnel.clone();
@@ -107,6 +108,19 @@ fn handle_keepalive(socket: &Arc<UdpSocket>, tunnel: &Arc<Mutex<Tunnel>>) -> Res
     loop {
         {
             let mut tunnel = tunnel.lock().unwrap();
+
+            if let (None, Some(addr_str)) = (tunnel.endpoint, tunnel.endpoint_string.clone()) {
+                match addr_str.to_socket_addrs() {
+                    Ok(mut addrs) => {
+                        if let Some(addr) = addrs.next() {
+                            tunnel.endpoint.replace(addr);
+                        }
+                    }
+                    Err(e) => {
+                        println!("Error: Couldn't resolve PEER_ENDPOINT: {:?}", e);
+                    }
+                }
+            }
 
             if let Some(addr) = tunnel.endpoint {
                 match tunnel.tun.update_timers(&mut encapsulate_buffer) {

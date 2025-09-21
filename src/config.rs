@@ -1,10 +1,9 @@
 use std::env;
-use std::net::SocketAddr;
 
 #[derive(Debug)]
 pub struct Peer {
     pub public_key: String,
-    pub endpoint: Option<SocketAddr>,
+    pub endpoint: Option<String>,
 }
 
 #[derive(Debug)]
@@ -29,8 +28,7 @@ impl Config {
                 .or(Some(25u16)),
             peer: Peer {
                 public_key: env::var("PEER_PUBLIC").expect("Error: PEER_PUBLIC not given"),
-                endpoint: env::var("PEER_ENDPOINT").ok()
-                    .map(|addr| addr.parse().expect("Error: Couldn't parse PEER_ENDPOINT")),
+                endpoint: env::var("PEER_ENDPOINT").ok(),
             },
         }
     }
